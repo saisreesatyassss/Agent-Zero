@@ -1,0 +1,1465 @@
+# AGENT ZERO — Complete Technical Implementation Blueprint
+
+
+
+Architecture finalized
+
+Hackathon MVP
+
+
+
+# An autonomous economy for AI agents.
+
+AGENT ZERO will be an open, multi-agent economy where software agents can discover other agents, purchase services, negotiate contracts, subcontract work, deliver results and accumulate economic reputation.
+
+We're going to build a functioning economy, not a simulated chatbot conversation.
+
+Our core product principle:
+
+> Any registered agent can become a buyer, seller, contractor or subcontractor. Agents can earn by completing work and spend their earnings by hiring other agents.
+
+For the hackathon, real money movement will happen through a customer-approved PayPal Sandbox transaction. Individual agent earnings and subcontracting allocations will be tracked in our internal ledger.
+
+## 1. Product definition
+
+# AGENT ZERO
+
+The infrastructure for an autonomous machine economy.
+
+[Building Onchain AI Agents That Actually Work… | Autheo](https://images.openai.com/static-rsc-4/gvhYmTqBn2rDC5SZZRjmLqUgkSAdHWjSPS0fOmrGSHtn9UZjICR_drPbluCFe3Bf_DrGHoB7qNvos4uCqhCmCuZ5lLaKS2Y940QS9JlbbDTkaAYnFzuQbPJ-paapJh7lHgnxyFibwGu0ghrfNOOU37d0yE3DIVF3G9fWi2TftWw?purpose=inline)
+
+[autheo.com](https://www.autheo.com/blog/building-onchain-ai-agents-developer-guide?utm_source=chatgpt.com)
+
+The central concept
+
+Humans introduce economic intent. AI agents discover opportunities, negotiate agreements, delegate work, execute services and build economic reputations.
+
+# 01
+
+Discover
+
+Find agents by skills, price and reliability.
+
+# 02
+
+Negotiate
+
+Agents independently bid and agree on terms.
+
+# 03
+
+Execute
+
+Agents hire and subcontract other agents.
+
+# 04
+
+Transact
+
+PayPal checkout and internal economic accounting.
+
+### Our target demonstration
+
+A customer requests:
+
+"I want a competitive intelligence report on 10 hotel booking platforms. Include pricing, customer sentiment, market positioning and recommendations. Budget: $20."
+
+AGENT ZERO will:
+
+1. Create the project.
+2. Decompose it into subtasks.
+3. Discover available agents.
+4. Invite agents to bid.
+5. Negotiate prices.
+6. Award contracts.
+7. Allow agents to subcontract.
+8. Execute actual AI tasks.
+9. Verify deliverables.
+10. Capture the PayPal-authorized payment after customer acceptance.
+11. Credit the participating agents in the internal ledger.
+
+The key demonstration is that the agents create their own commercial relationships rather than being hardcoded into one fixed workflow.
+
+## 2. Complete system architecture
+
+I recommend a modular monolith for this hackathon. It gives us clear separation between services without wasting hours building distributed infrastructure.
+
+Frontend — AGENT ZERO Console
+
+Next.js · TypeScript · Tailwind · React Flow
+
+Command Center · Marketplace · Live Economy · Ledger
+
+API Gateway / Application Backend
+
+REST API · Authentication · Validation · Authorization
+
+Agent Registry
+
+Identity · Skills · Availability · Reputation
+
+Marketplace Engine
+
+Discovery · Bidding · Selection
+
+Contract Engine
+
+Negotiation · Agreements · Subcontracting
+
+Agent Runtime
+
+LLM · Tool calling · Execution
+
+Verification Engine
+
+Evidence · Quality · Acceptance
+
+Economic Engine
+
+Budgets · Ledger · Accounting
+
+PayPal Sandbox
+
+OAuth · Orders · Authorize · Capture · Webhooks
+
+Supabase
+
+PostgreSQL · Persistence · Realtime
+
+### Recommended technology choices
+
+| Layer      | Technology           | Reason                           |
+| ---------- | -------------------- | -------------------------------- |
+| Frontend   | Next.js              | Fast full-stack development      |
+| Language   | TypeScript           | Shared contracts                 |
+| UI         | Tailwind + shadcn/ui | Fast polished interface          |
+| Graph      | React Flow           | Live agent economy               |
+| Backend    | Next.js API routes   | Avoid separate backend initially |
+| Database   | Supabase PostgreSQL  | Persistent economic records      |
+| Realtime   | Supabase Realtime    | Live agent events                |
+| AI         | Gemini or OpenAI     | Agent reasoning                  |
+| Validation | Zod                  | Structured tool inputs           |
+| Payments   | PayPal REST API      | Actual Sandbox payment           |
+| Deployment | Render or Vercel     | Hosted demo                      |
+
+My recommendation: TypeScript end-to-end. Don't split into Python and Node.js unless you have a specific reason.
+
+## 3. Agent economy: how agents are represented
+
+This is one of the most important design decisions.
+
+We should not create five agents as five hardcoded prompts and call that an economy.
+
+Every agent must be a registered entity with its own capabilities, economic constraints and history.
+
+### Agent identity model
+
+Each agent gets a persistent identity.
+
+Example:
+
+SCOUT-001
+
+Research specialist · Autonomous agent
+
+Active
+
+# 96
+
+Reputation score
+
+# 42
+
+Completed tasks
+
+# 92%
+
+Acceptance rate
+
+# $2–8
+
+Typical task price
+
+Capabilities
+
+- Competitor research
+- Web information extraction
+- Source verification
+- Market intelligence
+
+Economic rules
+
+- Minimum bid: $2
+- Maximum bid: $8
+- Maximum concurrent tasks: 3
+- Can subcontract: Yes
+- Maximum subcontracting allocation: 60% of its contract
+
+These numbers are illustrative demo data. In the actual implementation, reputation and pricing history must be calculated from recorded activity.
+
+### The six initial agents
+
+I recommend starting with these:
+
+| Agent ID | Agent       | Primary capability           |
+| -------- | ----------- | ---------------------------- |
+| MGR-001  | Genesis     | Task orchestration           |
+| RSC-001  | Scout       | Research                     |
+| DAT-001  | DataMind    | Data extraction and analysis |
+| SEN-001  | SentimentX  | Sentiment analysis           |
+| STR-001  | MarketPilot | Strategic analysis           |
+| DOC-001  | DocuMind    | Report generation            |
+| VER-001  | Veritas     | Independent verification     |
+
+That's seven agents including the manager and verifier.
+
+The manager is not the only agent allowed to hire others. Scout or DataMind can also subcontract tasks if their registered policies allow it.
+
+Important: An agent should be able to act as both a buyer and seller in different transactions.
+
+## 4. Agent communication protocol
+
+We need a standardized protocol so that agents can communicate without relying on unstructured conversations.
+
+I suggest creating our own lightweight protocol called:
+
+# AEP
+
+Agent Economic Protocol
+
+A structured communication and contracting protocol for autonomous economic agents.
+
+AEP is our project-defined protocol, not a claim that we've invented a universal standard.
+
+### 4.1 Message types
+
+| Message               | Purpose                          |
+| --------------------- | -------------------------------- |
+| `TASK_PUBLISH`        | Publish a new job                |
+| `TASK_DISCOVER`       | Find matching agents             |
+| `BID_SUBMIT`          | Submit a price proposal          |
+| `BID_REJECT`          | Reject a proposal                |
+| `BID_COUNTER`         | Negotiate a new price            |
+| `CONTRACT_AWARD`      | Assign a task                    |
+| `SUBTASK_CREATE`      | Hire another agent               |
+| `TASK_START`          | Begin execution                  |
+| `DELIVERABLE_SUBMIT`  | Submit completed work            |
+| `VERIFICATION_RESULT` | Accept or reject delivery        |
+| `PAYMENT_APPROVAL`    | Approve customer payment capture |
+| `LEDGER_CREDIT`       | Record agent earnings            |
+
+Every message should include:
+
+```
+{
+  "protocol": "AEP/1.0",
+  "message_id": "MSG-000123",
+  "message_type": "BID_SUBMIT",
+  "sender_agent_id": "RSC-001",
+  "recipient_agent_id": "MGR-001",
+  "task_id": "TASK-104",
+  "timestamp": "2026-11-11T10:00:00Z",
+  "payload": {
+    "proposed_price": 4.50,
+    "currency": "USD",
+    "estimated_minutes": 5,
+    "deliverables": [
+      "Competitor research",
+      "Source references"
+    ]
+  }
+}
+```
+
+Every message should be validated against a Zod schema before it is accepted.
+
+### 4.2 The bidding protocol
+
+Here's the actual negotiation we should implement.
+
+Negotiation simulation
+
+Genesis → Scout
+
+Offer
+
+"I have a competitor research task. My budget is $4."
+
+Scout → Genesis
+
+Counteroffer
+
+"I can complete this for $4.50, including source validation."
+
+Genesis → Scout
+
+Accepted
+
+"Agreed. Contract value $4.50. Delivery required within 5 minutes."
+
+A negotiation should have:
+
+- Maximum two counteroffers.
+- A fixed maximum price.
+- A deadline.
+- Clearly defined deliverables.
+- An immutable accepted contract.
+
+The LLM proposes the negotiation. Your backend enforces the rules.
+
+### 4.3 The subcontracting protocol
+
+This is our differentiating feature.
+
+Example:
+
+Scout has a $4.50 contract.
+
+Scout determines that a specialized pricing agent can complete part of the task more efficiently.
+
+Scout proposes:
+
+```
+{
+  "protocol": "AEP/1.0",
+  "message_type": "SUBTASK_CREATE",
+  "parent_task_id": "TASK-104",
+  "buyer_agent_id": "RSC-001",
+  "target_capability": "competitor_pricing",
+  "budget": 1.50,
+  "currency": "USD",
+  "deliverables": [
+    "Pricing comparison",
+    "Source URLs"
+  ]
+}
+```
+
+The system checks:
+
+1. Scout owns the parent contract.
+2. Subcontracting is permitted.
+3. $1.50 is within its subcontracting limit.
+4. The parent task budget is not exceeded.
+5. The selected agent has the required capabilities.
+
+Only then is the subcontract approved.
+
+Critical economic rule: An agent cannot spend more than the budget allocated to it, even if the LLM instructs it to do so.
+
+## 5. Complete database design
+
+I recommend PostgreSQL through Supabase.
+
+The database should preserve the economic history of every job, bid, contract, subcontract and transaction.
+
+### Database entities
+
+Core entities
+
+Identity and marketplace
+
+`agents` · `agent_skills` · `tasks` · `bids`
+
+Contract entities
+
+Commercial agreements
+
+`contracts` · `subtasks` · `deliverables` · `verifications`
+
+Economic entities
+
+Payments and accounting
+
+`projects` · `payments` · `ledger_accounts` · `ledger_entries`
+
+Operational entities
+
+Execution and audit
+
+`agent_messages` · `agent_events` · `webhook_events`
+
+### 5.1 SQL schema
+
+This is the initial schema I'd use. It is deliberately compact enough to implement during the hackathon.
+
+```
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+-- 1. Registered AI agents
+CREATE TABLE agents (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_code TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  description TEXT,
+  system_prompt TEXT,
+  model TEXT,
+  min_price NUMERIC(12,2) DEFAULT 0,
+  max_price NUMERIC(12,2) DEFAULT 100,
+  max_concurrent_tasks INT DEFAULT 3,
+  can_subcontract BOOLEAN DEFAULT FALSE,
+  subcontract_limit_pct NUMERIC(5,2) DEFAULT 0,
+  reputation NUMERIC(5,2) DEFAULT 50,
+  completed_tasks INT DEFAULT 0,
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 2. Agent capabilities
+CREATE TABLE agent_skills (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  agent_id UUID REFERENCES agents(id),
+  skill TEXT NOT NULL,
+  proficiency NUMERIC(5,2) DEFAULT 80
+);
+
+-- 3. Customer projects
+CREATE TABLE projects (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  title TEXT NOT NULL,
+  description TEXT,
+  customer_id TEXT NOT NULL,
+  budget NUMERIC(12,2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'created',
+  paypal_order_id TEXT,
+  paypal_authorization_id TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 4. Tasks and subtasks
+CREATE TABLE tasks (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  parent_task_id UUID REFERENCES tasks(id),
+  title TEXT NOT NULL,
+  description TEXT,
+  required_skills JSONB DEFAULT '[]',
+  allocated_budget NUMERIC(12,2),
+  status TEXT DEFAULT 'open',
+  assigned_agent_id UUID REFERENCES agents(id),
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 5. Bids and negotiations
+CREATE TABLE bids (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID REFERENCES tasks(id),
+  agent_id UUID REFERENCES agents(id),
+  proposed_price NUMERIC(12,2) NOT NULL,
+  estimated_minutes INT,
+  proposal TEXT,
+  status TEXT DEFAULT 'submitted',
+  round INT DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 6. Accepted commercial agreements
+CREATE TABLE contracts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID REFERENCES tasks(id),
+  buyer_agent_id UUID REFERENCES agents(id),
+  seller_agent_id UUID REFERENCES agents(id),
+  bid_id UUID REFERENCES bids(id),
+  agreed_amount NUMERIC(12,2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  terms JSONB DEFAULT '{}',
+  status TEXT DEFAULT 'active',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 7. Work submissions
+CREATE TABLE deliverables (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  task_id UUID REFERENCES tasks(id),
+  agent_id UUID REFERENCES agents(id),
+  content JSONB NOT NULL,
+  evidence JSONB DEFAULT '[]',
+  version INT DEFAULT 1,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 8. Independent verification
+CREATE TABLE verifications (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  deliverable_id UUID REFERENCES deliverables(id),
+  verifier_agent_id UUID REFERENCES agents(id),
+  score NUMERIC(5,2),
+  passed BOOLEAN,
+  feedback TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 9. PayPal transactions
+CREATE TABLE payments (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  paypal_order_id TEXT UNIQUE,
+  authorization_id TEXT,
+  capture_id TEXT,
+  amount NUMERIC(12,2) NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  status TEXT DEFAULT 'pending',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 10. Internal ledger accounts
+CREATE TABLE ledger_accounts (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  owner_type TEXT NOT NULL,
+  owner_id TEXT NOT NULL,
+  account_type TEXT NOT NULL,
+  currency TEXT DEFAULT 'USD',
+  UNIQUE(owner_type, owner_id, account_type, currency)
+);
+
+-- 11. Double-entry ledger
+CREATE TABLE ledger_entries (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  transaction_group_id UUID NOT NULL,
+  account_id UUID REFERENCES ledger_accounts(id),
+  direction TEXT NOT NULL CHECK (
+    direction IN ('debit', 'credit')
+  ),
+  amount NUMERIC(12,2) NOT NULL CHECK (amount > 0),
+  reference_type TEXT NOT NULL,
+  reference_id TEXT NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 12. Agent communications
+CREATE TABLE agent_messages (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  message_type TEXT NOT NULL,
+  sender_agent_id UUID REFERENCES agents(id),
+  recipient_agent_id UUID REFERENCES agents(id),
+  task_id UUID REFERENCES tasks(id),
+  payload JSONB NOT NULL,
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 13. Execution event stream
+CREATE TABLE agent_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  project_id UUID REFERENCES projects(id),
+  task_id UUID REFERENCES tasks(id),
+  agent_id UUID REFERENCES agents(id),
+  event_type TEXT NOT NULL,
+  payload JSONB DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- 14. PayPal webhook idempotency
+CREATE TABLE webhook_events (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  paypal_event_id TEXT UNIQUE NOT NULL,
+  event_type TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  processed_at TIMESTAMPTZ
+);
+
+```
+
+### Important database rules
+
+Do not allow agents or the LLM to directly update financial balances.
+
+Implement a database transaction called `post_ledger_transaction()` that:
+
+- Accepts multiple ledger entries.
+- Validates that debits equal credits.
+- Rejects negative amounts.
+- Prevents duplicate posting.
+- Commits all entries atomically.
+
+Add unique constraints and foreign keys for important relationships. Use database transactions for contract awards and budget reservations.
+
+For the hackathon, keep balances derived from the ledger instead of maintaining a separate mutable balance field.
+
+### 5.2 Example of the internal economy
+
+Suppose the customer authorizes $20 and the job is completed.
+
+The agent contracts might look like this:
+
+| Agent                        | Earnings |
+| ---------------------------- | -------- |
+| Scout                        | $4.50    |
+| DataMind                     | $3.50    |
+| SentimentX                   | $3.80    |
+| MarketPilot                  | $3.50    |
+| DocuMind                     | $3.20    |
+| PriceCrawler (subcontractor) | $1.50    |
+| Total                        | $20.00   |
+
+Here, DocuMind's $3.20 is its gross contract value before its $1.50 subcontracting cost.
+
+Its net contribution is $1.70.
+
+The ledger must avoid double-counting the subcontractor's earnings. One clean approach is to record:
+
+- $20 customer-funded project revenue.
+- $20 of agent contract obligations.
+- $1.50 internal transfer from Scout's allocation to PriceCrawler.
+
+The exact entries should be posted as balanced accounting transactions, not just as UI balance updates.
+
+This is an internal accounting simulation, not an assertion that all agents received actual PayPal payouts.
+
+## 6. Agent execution engine
+
+Now comes the actual AI engineering.
+
+We need an execution engine that can invoke agents dynamically.
+
+### 6.1 Agent lifecycle
+
+REGISTERED
+
+Agent identity and capabilities stored
+
+DISCOVERABLE
+
+Available for suitable work
+
+BIDDING
+
+Submitting and negotiating offers
+
+CONTRACTED
+
+Commercial agreement accepted
+
+EXECUTING
+
+Working and potentially subcontracting
+
+SUBMITTED
+
+Deliverable and evidence available
+
+VERIFIED / SETTLED
+
+Quality approved and ledger posted
+
+Include additional terminal states: `REJECTED`, `FAILED`, `CANCELLED` and `DISPUTED`.
+
+Never allow a state transition just because an agent claims it happened. The backend must validate the previous state and permissions.
+
+### 6.2 Agent runtime design
+
+Each agent should have:
+
+- A system prompt.
+- A set of permitted tools.
+- A task context.
+- An economic budget.
+- A structured output schema.
+- A maximum execution time.
+- A limited number of tool calls.
+
+Example:
+
+```
+interface AgentContext {
+  agentId: string;
+  taskId: string;
+  parentTaskId?: string;
+  availableBudget: number;
+  currency: "USD";
+  capabilities: string[];
+  permittedTools: string[];
+  canSubcontract: boolean;
+}
+
+interface AgentResult {
+  status: "completed" | "failed";
+  summary: string;
+  deliverables: {
+    title: string;
+    content: unknown;
+    evidence: string[];
+  }[];
+  requestedSubtasks?: {
+    capability: string;
+    description: string;
+    maximumBudget: number;
+  }[];
+}
+```
+
+The runtime should support two different types of actions:
+
+1. Reasoning actions: deciding what to research, how to analyze, what agent to hire.
+2. Economic actions: placing bids, creating contracts, reserving budgets, approving submissions.
+
+The second category must always go through backend validation.
+
+### 6.3 How agents hire other agents
+
+Implement this as a reusable function:
+
+```
+async function hireAgent(input: {
+  buyerAgentId: string;
+  parentTaskId: string;
+  capability: string;
+  maximumBudget: number;
+  requirements: string[];
+}) {
+  // 1. Verify buyer owns parent contract
+  // 2. Verify subcontracting permission
+  // 3. Check remaining allocated budget
+  // 4. Discover matching agents
+  // 5. Request bids
+  // 6. Select and negotiate
+  // 7. Reserve subcontract budget
+  // 8. Create child task and contract
+  // 9. Emit economic events
+}
+```
+
+Notice that the LLM does not get to pass an arbitrary buyer ID and spend money. The backend should derive the caller's identity from the execution context.
+
+### 6.4 Preventing runaway agent spending
+
+This is critical for a product built around autonomous commerce.
+
+Our economic engine should enforce:
+
+- Project budget cannot be exceeded.
+- An agent cannot spend beyond its allocated budget.
+- A child task cannot exceed the parent's available allocation.
+- Agents cannot subcontract to themselves.
+- Circular subcontracting is prohibited.
+- Maximum delegation depth: 2.
+- Maximum negotiation rounds: 2.
+- Maximum concurrent execution: 3 per agent.
+- All contract awards require an atomic budget reservation.
+
+These rules should be implemented in code and database constraints, not just in system prompts.
+
+## 7. PayPal integration — exact implementation
+
+Mandatory hackathon integration
+
+PayPal must be central to AGENT ZERO. We should use the standard PayPal Checkout / Orders API rather than pretending our internal ledger is a PayPal marketplace payout system.
+
+### 7.1 Sandbox setup
+
+Create an application in the [PayPal Developer Dashboard](https://developer.paypal.com/dashboard/?utm_source=chatgpt.com).
+
+You'll need:
+
+- Sandbox Client ID.
+- Sandbox Client Secret.
+- Sandbox buyer account.
+- Sandbox business account.
+- Webhook configuration.
+
+Use the sandbox API host:
+
+`https://api-m.sandbox.paypal.com`
+
+PayPal uses OAuth 2.0 for REST API authentication. The access token is generated on the backend and should never be exposed to the browser.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://developer.paypal.com\&sz=32)
+
+PayPal Developer+1
+
+
+
+Environment variables:
+
+```
+PAYPAL_CLIENT_ID=
+PAYPAL_CLIENT_SECRET=
+PAYPAL_BASE_URL=https://api-m.sandbox.paypal.com
+PAYPAL_WEBHOOK_ID=
+
+AI_PROVIDER=
+AI_API_KEY=
+
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+
+APP_URL=http://localhost:3000
+```
+
+Never commit `.env` to GitHub.
+
+### 7.2 Payment lifecycle
+
+Our flow:
+
+Customer submits project
+
+# $20.00
+
+Create PayPal Order
+
+Intent: AUTHORIZE
+
+Customer approves at PayPal
+
+Customer explicitly approves payment
+
+Backend authorizes order
+
+Store authorization ID and status
+
+Agents perform and verify work
+
+No automatic payment capture by agents
+
+Customer approves final delivery
+
+Explicit acceptance
+
+Capture PayPal authorization
+
+Payment completed
+
+Post internal ledger entries
+
+Credit participating agents' earnings records
+
+### 7.3 The actual API calls
+
+A. Obtain access token
+
+```
+curl -X POST \
+  https://api-m.sandbox.paypal.com/v1/oauth2/token \
+  -u "$PAYPAL_CLIENT_ID:$PAYPAL_CLIENT_SECRET" \
+  -H "Content-Type: application/x-www-form-urlencoded" \
+  -d "grant_type=client_credentials"
+```
+
+B. Create order
+
+```
+POST /v2/checkout/orders
+```
+
+```
+{
+  "intent": "AUTHORIZE",
+  "purchase_units": [
+    {
+      "reference_id": "PROJECT-104",
+      "description": "AGENT ZERO research project",
+      "amount": {
+        "currency_code": "USD",
+        "value": "20.00"
+      }
+    }
+  ],
+  "payment_source": {
+    "paypal": {
+      "experience_context": {
+        "return_url": "https://your-app.com/api/paypal/return",
+        "cancel_url": "https://your-app.com/api/paypal/cancel",
+        "user_action": "CONTINUE"
+      }
+    }
+  }
+}
+```
+
+Store the returned order ID.
+
+Extract the approval URL from the response and redirect the customer to PayPal.
+
+C. Authorize the approved order
+
+Once the customer returns, your backend calls:
+
+```
+POST /v2/checkout/orders/{ORDER_ID}/authorize
+```
+
+Save the authorization ID returned by PayPal.
+
+D. Capture after successful delivery
+
+Once the customer approves the completed project, call:
+
+```
+POST /v2/payments/authorizations/{AUTHORIZATION_ID}/capture
+```
+
+This distinction matters: after the order is authorized, the capture call uses the authorization ID and Payments API endpoint, not the order capture endpoint.
+
+The authorization can remain valid for up to 29 days, but we should complete the project and capture well within the recommended three-day honor period.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://developer.paypal.com\&sz=32)
+
+PayPal Developer+2
+
+
+
+### 7.4 Backend payment service
+
+```
+class PayPalService {
+  async getAccessToken() {
+    // Obtain OAuth token using server credentials
+  }
+
+  async createOrder(projectId: string) {
+    // Validate project and budget
+    // Create AUTHORIZE order
+    // Persist PayPal order ID
+  }
+
+  async authorizeOrder(orderId: string) {
+    // Validate approved order
+    // Authorize through PayPal
+    // Persist authorization ID
+  }
+
+  async captureAuthorization(authorizationId: string) {
+    // Validate customer acceptance
+    // Check delivery and payment state
+    // Capture authorization
+    // Record transaction
+  }
+}
+```
+
+The service should be idempotent. Use PayPal request IDs where supported, database uniqueness and transaction-state checks to avoid duplicate charges.
+
+### 7.5 Webhooks
+
+Subscribe to relevant payment events, including:
+
+- `CHECKOUT.ORDER.APPROVED`
+- `PAYMENT.AUTHORIZATION.CREATED`
+- `PAYMENT.CAPTURE.COMPLETED`
+- `PAYMENT.CAPTURE.DENIED`
+- `PAYMENT.CAPTURE.REFUNDED`
+
+The exact event coverage should match the payment flow we implement.
+
+Webhook handler:
+
+```
+async function handlePayPalWebhook(event: any) {
+  // 1. Verify webhook signature with PayPal
+  // 2. Check event ID in webhook_events
+  // 3. Ignore already processed events
+  // 4. Validate associated order/authorization
+  // 5. Update transaction state
+  // 6. Emit payment events
+}
+```
+
+Do not trust a browser redirect as proof of payment. Confirm payment state with PayPal and use verified webhook notifications.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://www.paypal.com\&sz=32)
+
+PayPal US+1
+
+
+
+### 7.6 Why not use PayPal multiparty payouts?
+
+PayPal offers multiparty marketplace infrastructure, but it requires platform approval and seller onboarding. It isn't simply a matter of adding a `pay_agent()` function.&#x20;
+
+[image](https://www.google.com/s2/favicons?domain=https://developer.paypal.com\&sz=32)
+
+PayPal Developer+2
+
+
+
+For our hackathon:
+
+- One customer authorizes one project payment.
+- Our platform captures that payment after acceptance.
+- The internal ledger allocates economic earnings to agents.
+- No claim is made that agents received real PayPal payouts.
+
+This is a much safer and more achievable MVP.
+
+## 8. Backend API design
+
+Use REST endpoints with clear ownership and authorization boundaries.
+
+### Agent marketplace
+
+| Method | Endpoint                       | Function            |
+| ------ | ------------------------------ | ------------------- |
+| POST   | `/api/agents`                  | Register agent      |
+| GET    | `/api/agents`                  | Discover agents     |
+| GET    | `/api/agents/:id`              | Agent profile       |
+| GET    | `/api/agents/:id/history`      | Reputation history  |
+| POST   | `/api/agents/:id/availability` | Update availability |
+
+### Project and task management
+
+| Method | Endpoint                     | Function              |
+| ------ | ---------------------------- | --------------------- |
+| POST   | `/api/projects`              | Create project        |
+| GET    | `/api/projects/:id`          | Project details       |
+| POST   | `/api/projects/:id/plan`     | AI task decomposition |
+| POST   | `/api/tasks/:id/discover`    | Find agents           |
+| POST   | `/api/tasks/:id/bids`        | Submit bid            |
+| POST   | `/api/bids/:id/negotiate`    | Counteroffer          |
+| POST   | `/api/contracts/:id/award`   | Award contract        |
+| POST   | `/api/tasks/:id/subcontract` | Create child task     |
+
+### Execution and verification
+
+| Method | Endpoint                       | Function          |
+| ------ | ------------------------------ | ----------------- |
+| POST   | `/api/tasks/:id/execute`       | Execute task      |
+| POST   | `/api/tasks/:id/deliver`       | Submit result     |
+| POST   | `/api/deliverables/:id/verify` | Verify result     |
+| POST   | `/api/deliverables/:id/accept` | Accept result     |
+| GET    | `/api/projects/:id/events`     | Execution history |
+
+### Economy and payments
+
+| Method | Endpoint                   | Function              |
+| ------ | -------------------------- | --------------------- |
+| POST   | `/api/paypal/create-order` | Create PayPal order   |
+| POST   | `/api/paypal/authorize`    | Authorize order       |
+| POST   | `/api/paypal/capture`      | Capture authorization |
+| POST   | `/api/paypal/webhook`      | Process webhook       |
+| GET    | `/api/projects/:id/ledger` | Project accounting    |
+| GET    | `/api/agents/:id/earnings` | Agent earnings        |
+
+For live updates, use Supabase Realtime to stream changes from `agent_events`, task statuses and ledger events.
+
+## 9. Frontend: the actual product experience
+
+I would avoid the typical dashboard with 20 cards.
+
+The interface should feel like an economic operating system.
+
+[Browse thousands of Command Center UI images for design inspiration | Dribbble](https://images.openai.com/static-rsc-4/eIbc9TtCunft2R9v5VP6k-Xg2ziiolvoYxI52aj1B0NIVUYJwVMiF6oed9Y54q9jpWMCm7IcsFw6SfonabcaKH9j3l_odH_KTYvhiEpVqEdCwmwHNI9dOgj9j3FkIfHF1Ht8xkxnpS2V1GeBaifSiX6OUllCF8VdM4ySZrsGp5Q?purpose=inline)
+
+[neuro-san-studio/README.md at main · cognizant-ai-lab/neuro-san-studio · GitHub](https://images.openai.com/static-rsc-4/ZRKj3oWk29u8ZPnXrcYsEwr4v2PgMAk8NOCrj31P-ukahjP4GWH6E_M_HLz85Y1cOVuISapjjrEfEw_ZSoqzycW5XA-fQNeMJqKzuWf8lD4HGJrSUgAsKhnlri-xqP6PndWk7vY2yXQl1GYyYBl_eeIZg4GOyhzJDGLacyeFghw?purpose=inline)
+
+[Financialtracking designs, themes, templates and downloadable graphic elements on Dribbble](https://images.openai.com/static-rsc-4/JcdmK4aRnred7BogvKDVi9hQ0h3q2hwf-hka2MeLgPRXDSA3EAhsFBMNtItP1Rl2I23OFdKsenuwGS1psXssi8qAhq5-ZnZmJLfamu03a6OImW5O1iPyritxg_24-x9slQJxJrhkQFm-jxiEMDEhHmyjfguxGH1Ts4p3bbhxJDw?purpose=inline)
+
+11
+
+### Screen 1 — Command Center
+
+The landing page should contain a natural-language job creation box.
+
+Example:
+
+Create an economic task
+
+New project
+
+Describe the outcome you want. Agents will organize the work.
+
+"Research the top 10 hotel booking platforms. Compare pricing, customer sentiment and market positioning."
+
+Project budget
+
+$20.00 USD
+
+Execution mode
+
+Autonomous
+
+Requires customer payment authorization
+
+### Screen 2 — Agent Marketplace
+
+Display all registered agents.
+
+Filters:
+
+- Skills.
+- Price range.
+- Reputation.
+- Availability.
+- Subcontracting permission.
+
+Each agent profile should display its economic performance and work history.
+
+### Screen 3 — Live Economy
+
+[SelfAi - Enterprise AI Operating System](https://images.openai.com/static-rsc-4/9xYKvNTR0k-saF-FRKJxeOGbgelR8trf4IBIk4Q4R_K1nn9zy4Ezet-JPPenQ0Dgi6Aws8wa-pXRZF_q5CzLbY2FJc6y-n4bi48RavUhC73cd1ua1me3es5bkqk-RlyGABckqsJvwmhdBEakQWAG7U6zTfLm6PoBAPJZHz7a6Qo?purpose=inline)
+
+[selfai.com](https://selfai.com/?utm_source=chatgpt.com)
+
+This should be our hero screen.
+
+Use React Flow to display:
+
+- Manager agent.
+- Buyer and seller relationships.
+- Parent and child tasks.
+- Active negotiations.
+- Completed contracts.
+- Agent-to-agent payment allocations.
+
+The graph must be generated from real task and contract records, not a static illustration.
+
+### Screen 4 — Economic Ledger
+
+Show:
+
+| Agent        | Gross earnings | Subcontracting | Net   |
+| ------------ | -------------- | -------------- | ----- |
+| Scout        | $4.50          | $1.50          | $3.00 |
+| DataMind     | $3.50          | $0             | $3.50 |
+| SentimentX   | $3.80          | $0             | $3.80 |
+| MarketPilot  | $3.50          | $0             | $3.50 |
+| DocuMind     | $3.20          | $0             | $3.20 |
+| PriceCrawler | $1.50          | $0             | $1.50 |
+
+Illustrative accounting data, not real PayPal agent payouts.
+
+### Screen 5 — Trust and Reputation
+
+Show:
+
+- Completion rate.
+- Acceptance rate.
+- Average verification score.
+- Average delivery time.
+- Number of subcontracted jobs.
+- Disputes and failed jobs.
+
+This is where the economy gains credibility.
+
+## 10. Repository structure
+
+Keep the structure clean but avoid overengineering.
+
+```
+agent-zero/
+│
+├── app/
+│   ├── page.tsx
+│   ├── command-center/
+│   ├── marketplace/
+│   ├── economy/
+│   ├── ledger/
+│   ├── agents/[id]/
+│   └── api/
+│       ├── agents/
+│       ├── projects/
+│       ├── tasks/
+│       ├── bids/
+│       ├── contracts/
+│       ├── paypal/
+│       └── webhooks/
+│
+├── components/
+│   ├── dashboard/
+│   ├── marketplace/
+│   ├── agent-graph/
+│   ├── ledger/
+│   └── shared/
+│
+├── lib/
+│   ├── ai/
+│   │   ├── orchestrator.ts
+│   │   ├── agent-runtime.ts
+│   │   ├── bidding.ts
+│   │   ├── negotiation.ts
+│   │   └── verification.ts
+│   │
+│   ├── economy/
+│   │   ├── budget.ts
+│   │   ├── contracts.ts
+│   │   ├── ledger.ts
+│   │   └── reputation.ts
+│   │
+│   ├── paypal/
+│   │   ├── client.ts
+│   │   ├── orders.ts
+│   │   ├── authorization.ts
+│   │   ├── capture.ts
+│   │   └── webhooks.ts
+│   │
+│   ├── database/
+│   └── protocols/
+│       ├── aep.ts
+│       └── schemas.ts
+│
+├── supabase/
+│   └── migrations/
+│
+├── public/
+├── tests/
+├── .env.example
+├── LICENSE
+├── README.md
+└── package.json
+```
+
+Use a public MIT license unless you have a reason to choose another license.
+
+## 11. Hour-by-hour hackathon execution plan
+
+Based on the deadline you shared, we have approximately 35 hours from 11 November afternoon until 13 November at 1:30 AM IST.
+
+I recommend planning for approximately 30 hours of actual development and keeping the remaining time as a safety buffer.
+
+# 30-hour build roadmap
+
+Suggested sequence from project kickoff, not fixed clock appointments.
+
+1. Hours 0–2: Foundation
+   - Create Next.js project.
+   - Configure Supabase.
+   - Set up GitHub repository.
+   - Create PayPal Sandbox credentials.
+   - Establish UI theme and application shell.
+   Milestone 1: App running
+2. Hours 2–5: Database and agent registry
+   - Run database migrations.
+   - Register seven initial agents.
+   - Add skills and agent profiles.
+   - Build agent discovery API.
+   - Display marketplace.
+   Milestone 2: Agents discoverable
+3. Hours 5–8: AI orchestration
+   - Integrate LLM.
+   - Implement task decomposition.
+   - Implement structured AEP messages.
+   - Create agent runtime.
+   - Execute one actual research task.
+   Milestone 3: Agents can work
+4. Hours 8–12: Marketplace and negotiation
+   - Implement agent discovery.
+   - Implement bidding.
+   - Implement counteroffers.
+   - Award contracts.
+   - Add budget reservations.
+   Milestone 4: Agents can hire
+5. Hours 12–15: Subcontracting
+   - Implement child tasks.
+   - Implement parent-child contracts.
+   - Add subcontracting limits.
+   - Prevent circular delegation.
+   - Build agent interaction graph.
+   Milestone 5: Agents can hire other agents
+6. Hours 15–18: Deliverables and verification
+   - Execute research tasks.
+   - Store actual deliverables.
+   - Implement verifier.
+   - Add acceptance and rejection.
+   - Calculate agent reputation.
+   Milestone 6: Work can be verified
+7. Hours 18–22: PayPal
+   - OAuth authentication.
+   - Create PayPal order.
+   - Customer approval.
+   - Authorization.
+   - Capture.
+   - Webhook verification.
+   - Internal ledger posting.
+   Milestone 7: Real Sandbox payment
+8. Hours 22–25: Product polish
+   - Complete Command Center.
+   - Build live execution graph.
+   - Build economy and ledger screens.
+   - Add real-time updates.
+   - Improve responsive design.
+   Milestone 8: Complete product experience
+9. Hours 25–27: Integration testing
+   - Run complete customer-to-agent workflow.
+   - Test subcontracting.
+   - Test budget restrictions.
+   - Test PayPal approval and capture.
+   - Fix failures.
+   Milestone 9: End-to-end working
+10. Hours 27–29: Submission preparation
+    - Deploy application.
+    - Prepare public GitHub repository.
+    - Complete README and license.
+    - Record demo video.
+    - Write Devpost project description.
+    Milestone 10: Submission ready
+11. Hour 29–30: Final validation
+    - Test hosted demo.
+    - Verify public video.
+    - Check all submission requirements.
+    - Submit before deadline.
+
+Hours 30–35: Keep as contingency. Don't plan new features in this window.
+
+## 12. What must work before we submit?
+
+I would use this as the release checklist.
+
+Release readiness
+
+# 0/17
+
+User can create a project with a fixed budget
+
+Seven agents appear in the marketplace
+
+Manager decomposes a real task using an LLM
+
+Multiple agents submit actual bids
+
+Negotiation changes a proposed price
+
+Manager awards a contract
+
+Scout hires a subcontractor
+
+Subcontractor completes a real AI task
+
+Deliverables are stored and independently verified
+
+Budget limits prevent overspending
+
+PayPal Sandbox buyer approves an authorization
+
+Backend captures the authorization after customer acceptance
+
+Webhook verification and duplicate-event protection work
+
+Internal double-entry ledger balances
+
+Live execution graph reflects actual events
+
+Public GitHub repository has source code and LICENSE
+
+Hosted demo and YouTube video work
+
+Reset checklist
+
+## 13. What NOT to build
+
+This is important because we have limited time.
+
+| Don't build                       | Build instead                           |
+| --------------------------------- | --------------------------------------- |
+| 20 different AI agents            | 7 genuinely useful agents               |
+| Complex blockchain integration    | Transparent internal ledger             |
+| Real crypto wallets               | PayPal Sandbox                          |
+| Custom LLM training               | Existing LLM with tool calling          |
+| Fully distributed microservices   | Modular monolith                        |
+| A complicated agent framework     | Simple AEP protocol                     |
+| Fake agent-to-agent conversations | Actual task execution and contracts     |
+| Fake transaction animations       | Actual PayPal authorization and capture |
+
+### Three technical risks to watch
+
+1\. LLM unpredictability
+
+Agents may return invalid bids, exceed budgets or fail tasks.
+
+Solution: Zod validation, retries, timeouts and backend-controlled economic rules.
+
+2\. Payment authorization
+
+Don't capture money simply because an AI says the work is complete.
+
+Solution: independent verification, customer acceptance, PayPal API confirmation and idempotent payment processing.
+
+3\. Subcontracting complexity
+
+Agents could create infinite delegation loops.
+
+Solution: maximum delegation depth of two, budget reservations, cycle detection and concurrent-task limits.
+
+## 14. How to make this more than a hackathon project
+
+There is a larger opportunity here.
+
+AGENT ZERO could eventually become a protocol and infrastructure layer for autonomous commercial agents.
+
+Imagine external developers registering their own agents.
+
+A developer could publish:
+
+```
+{
+  "agent_name": "LegalResearchPro",
+  "capabilities": [
+    "legal_document_research",
+    "contract_summarization"
+  ],
+  "pricing": {
+    "model": "per_task",
+    "minimum": 2.00,
+    "maximum": 25.00
+  },
+  "subcontracting": true
+}
+```
+
+Another agent could discover and hire it without knowing how it was implemented.
+
+That creates a network effect:
+
+- More registered agents → more capabilities.
+- More capabilities → more useful tasks.
+- More completed work → stronger reputation.
+- Stronger reputation → more commercial opportunities.
+
+Longer term, we could explore interoperability with existing agent communication standards instead of making AEP a closed ecosystem.
+
+## 15. Final implementation priorities
+
+My recommendation is to organize development around these five non-negotiable demonstrations:
+
+1\. Autonomous agent discovery
+
+An agent can find another agent based on capabilities, pricing and reliability.
+
+2\. Economic negotiation
+
+Agents can submit bids, negotiate and create actual contracts.
+
+3\. Agent-to-agent subcontracting
+
+An agent can hire another agent to complete a real part of its assigned task.
+
+4\. Verifiable execution
+
+Agents deliver evidence and their work is checked before acceptance.
+
+5\. PayPal-powered economic settlement
+
+A real Sandbox payment authorization and capture, followed by transparent internal agent accounting.
+
+## 16. Official technical references
+
+These are the documents I'd keep open while developing:
+
+1. [PayPal REST API — Authentication and setup](https://developer.paypal.com/api/rest?utm_source=chatgpt.com).
+2. [PayPal Orders API v2](https://developer.paypal.com/api/rest/integration/orders-api?utm_source=chatgpt.com).
+3. [Authorize and delay capture](https://developer.paypal.com/checkout/delay-capture/?utm_source=chatgpt.com).
+4. [PayPal webhooks](https://www.paypal.com/us/cshelp/article/what-are-webhooks-and-how-do-i-subscribe--ts2306?utm_source=chatgpt.com).
+5. [PayPal multiparty platform capabilities](https://developer.paypal.com/platforms/overview?utm_source=chatgpt.com).
+6. [PayPal MCP server quickstart](https://developer.paypal.com/ai-tools/mcp-server?utm_source=chatgpt.com).
+
+One interesting extra: PayPal also publishes an MCP server. We can investigate whether its business operations are useful as an additional agent tool, but standard Orders API checkout should remain our reliable payment implementation for this MVP.
+
+# My final recommendation
+
+I want AGENT ZERO to demonstrate one thing exceptionally well:
+
+An AI agent independently hires another AI agent, negotiates a commercial agreement, gets work completed, verifies the deliverable and participates in an actual payment-backed economic workflow.
+
+That single end-to-end interaction is much more valuable than 15 disconnected features.
+
+And importantly, the project has two levels of value:
+
+- Hackathon: A working demonstration of autonomous agent commerce.
+- Beyond the hackathon: Potential infrastructure for a marketplace where independent AI agents can offer and purchase services.
+
+The next step should be to establish the repository, database and application shell, then build the first complete agent-to-agent hiring flow before polishing the dashboard.
+
+I would call our first engineering milestone:
+
+Genesis hires Scout. Scout hires PriceCrawler. PriceCrawler delivers. The economy records the transaction.

@@ -1,0 +1,472 @@
+{
+  "entities": {
+    "Agent": {
+      "title": "Agent",
+      "description": "Registered autonomous economic AI agent with capabilities, pricing constraints, subcontracting policy, and reputation metrics.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agent_code": { "type": "string", "maxLength": 32, "pattern": "^[A-Z0-9\\-]+$" },
+        "name": { "type": "string", "maxLength": 100 },
+        "role": { "type": "string", "maxLength": 120 },
+        "description": { "type": "string", "maxLength": 1000 },
+        "system_prompt": { "type": "string", "maxLength": 2000 },
+        "model": { "type": "string", "maxLength": 64 },
+        "min_price": { "type": "number" },
+        "max_price": { "type": "number" },
+        "max_concurrent_tasks": { "type": "number" },
+        "can_subcontract": { "type": "boolean" },
+        "subcontract_limit_pct": { "type": "number" },
+        "reputation": { "type": "number" },
+        "completed_tasks": { "type": "number" },
+        "acceptance_rate": { "type": "number" },
+        "avg_verification_score": { "type": "number" },
+        "avg_delivery_seconds": { "type": "number" },
+        "subcontracted_count": { "type": "number" },
+        "disputes_count": { "type": "number" },
+        "skills": { "type": "array" },
+        "status": { "type": "string", "enum": ["active", "busy", "offline"], "maxLength": 32 },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "agent_code",
+        "name",
+        "role",
+        "description",
+        "system_prompt",
+        "model",
+        "min_price",
+        "max_price",
+        "max_concurrent_tasks",
+        "can_subcontract",
+        "subcontract_limit_pct",
+        "reputation",
+        "completed_tasks",
+        "acceptance_rate",
+        "avg_verification_score",
+        "avg_delivery_seconds",
+        "subcontracted_count",
+        "disputes_count",
+        "skills",
+        "status",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "Customer-initiated economic project with fixed USD budget and PayPal authorization lifecycle.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 3000 },
+        "customer_id": { "type": "string", "maxLength": 128 },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "budget": { "type": "number" },
+        "allocated_budget": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD"], "maxLength": 8 },
+        "status": {
+          "type": "string",
+          "enum": ["created", "payment_authorized", "decomposing", "bidding", "contracted", "executing", "verifying", "delivered", "settled", "cancelled", "disputed"],
+          "maxLength": 32
+        },
+        "execution_mode": { "type": "string", "enum": ["autonomous", "step_by_step"], "maxLength": 32 },
+        "paypal_order_id": { "type": "string", "maxLength": 128 },
+        "paypal_authorization_id": { "type": "string", "maxLength": 128 },
+        "paypal_capture_id": { "type": "string", "maxLength": 128 },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "title",
+        "description",
+        "customer_id",
+        "ownerId",
+        "budget",
+        "allocated_budget",
+        "currency",
+        "status",
+        "execution_mode",
+        "paypal_order_id",
+        "paypal_authorization_id",
+        "paypal_capture_id",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Task": {
+      "title": "Task",
+      "description": "Decomposed work unit or subcontracted child task assigned through the marketplace.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "parent_task_id": { "type": "string", "maxLength": 128 },
+        "delegation_depth": { "type": "number" },
+        "title": { "type": "string", "maxLength": 200 },
+        "description": { "type": "string", "maxLength": 2000 },
+        "required_skills": { "type": "array" },
+        "allocated_budget": { "type": "number" },
+        "agreed_price": { "type": "number" },
+        "status": {
+          "type": "string",
+          "enum": ["open", "discoverable", "bidding", "contracted", "executing", "submitted", "verified", "settled", "rejected", "failed", "cancelled", "disputed"],
+          "maxLength": 32
+        },
+        "buyer_agent_id": { "type": "string", "maxLength": 128 },
+        "buyer_agent_code": { "type": "string", "maxLength": 32 },
+        "assigned_agent_id": { "type": "string", "maxLength": 128 },
+        "assigned_agent_code": { "type": "string", "maxLength": 32 },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "parent_task_id",
+        "delegation_depth",
+        "title",
+        "description",
+        "required_skills",
+        "allocated_budget",
+        "agreed_price",
+        "status",
+        "buyer_agent_id",
+        "buyer_agent_code",
+        "assigned_agent_id",
+        "assigned_agent_code",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Bid": {
+      "title": "Bid",
+      "description": "Price proposal and negotiation record between buyer and seller agents.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "task_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agent_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agent_code": { "type": "string", "maxLength": 32 },
+        "agent_name": { "type": "string", "maxLength": 100 },
+        "buyer_agent_code": { "type": "string", "maxLength": 32 },
+        "initial_offer": { "type": "number" },
+        "proposed_price": { "type": "number" },
+        "final_price": { "type": "number" },
+        "estimated_minutes": { "type": "number" },
+        "proposal": { "type": "string", "maxLength": 1000 },
+        "negotiation_log": { "type": "string", "maxLength": 2000 },
+        "status": {
+          "type": "string",
+          "enum": ["submitted", "countered", "accepted", "rejected"],
+          "maxLength": 32
+        },
+        "round": { "type": "number" },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "task_id",
+        "agent_id",
+        "agent_code",
+        "agent_name",
+        "buyer_agent_code",
+        "initial_offer",
+        "proposed_price",
+        "final_price",
+        "estimated_minutes",
+        "proposal",
+        "negotiation_log",
+        "status",
+        "round",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Contract": {
+      "title": "Contract",
+      "description": "Immutable commercial agreement binding a buyer agent and seller agent on a specific task.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "task_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "parent_task_id": { "type": "string", "maxLength": 128 },
+        "buyer_agent_id": { "type": "string", "maxLength": 128 },
+        "buyer_agent_code": { "type": "string", "maxLength": 32 },
+        "seller_agent_id": { "type": "string", "maxLength": 128 },
+        "seller_agent_code": { "type": "string", "maxLength": 32 },
+        "seller_agent_name": { "type": "string", "maxLength": 100 },
+        "bid_id": { "type": "string", "maxLength": 128 },
+        "agreed_amount": { "type": "number" },
+        "subcontracted_amount": { "type": "number" },
+        "net_amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD"], "maxLength": 8 },
+        "terms_summary": { "type": "string", "maxLength": 1000 },
+        "status": {
+          "type": "string",
+          "enum": ["active", "completed", "settled", "disputed", "cancelled"],
+          "maxLength": 32
+        },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "task_id",
+        "parent_task_id",
+        "buyer_agent_id",
+        "buyer_agent_code",
+        "seller_agent_id",
+        "seller_agent_code",
+        "seller_agent_name",
+        "bid_id",
+        "agreed_amount",
+        "subcontracted_amount",
+        "net_amount",
+        "currency",
+        "terms_summary",
+        "status",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "Deliverable": {
+      "title": "Deliverable",
+      "description": "Completed AI work output, structured research data, evidence citations, and independent verification result.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "task_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agent_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "agent_code": { "type": "string", "maxLength": 32 },
+        "agent_name": { "type": "string", "maxLength": 100 },
+        "title": { "type": "string", "maxLength": 200 },
+        "summary": { "type": "string", "maxLength": 2000 },
+        "content_markdown": { "type": "string", "maxLength": 15000 },
+        "evidence_items": { "type": "array" },
+        "version": { "type": "number" },
+        "verification_score": { "type": "number" },
+        "verification_passed": { "type": "boolean" },
+        "verification_feedback": { "type": "string", "maxLength": 2000 },
+        "verifier_agent_code": { "type": "string", "maxLength": 32 },
+        "status": {
+          "type": "string",
+          "enum": ["submitted", "verified", "accepted", "rejected"],
+          "maxLength": 32
+        },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "task_id",
+        "agent_id",
+        "agent_code",
+        "agent_name",
+        "title",
+        "summary",
+        "content_markdown",
+        "evidence_items",
+        "version",
+        "verification_score",
+        "verification_passed",
+        "verification_feedback",
+        "verifier_agent_code",
+        "status",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "LedgerEntry": {
+      "title": "LedgerEntry",
+      "description": "Immutable double-entry accounting record tracking debits and credits across customer escrow and agent accounts.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "transaction_group_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "account_id": { "type": "string", "maxLength": 128 },
+        "owner_type": { "type": "string", "enum": ["customer", "escrow", "agent"], "maxLength": 32 },
+        "owner_code": { "type": "string", "maxLength": 64 },
+        "owner_name": { "type": "string", "maxLength": 120 },
+        "account_type": { "type": "string", "enum": ["funding", "escrow_liability", "gross_revenue", "subcontract_expense", "net_earnings"], "maxLength": 64 },
+        "direction": { "type": "string", "enum": ["debit", "credit"], "maxLength": 16 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD"], "maxLength": 8 },
+        "reference_type": { "type": "string", "maxLength": 64 },
+        "reference_id": { "type": "string", "maxLength": 128 },
+        "description": { "type": "string", "maxLength": 500 },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "transaction_group_id",
+        "account_id",
+        "owner_type",
+        "owner_code",
+        "owner_name",
+        "account_type",
+        "direction",
+        "amount",
+        "currency",
+        "reference_type",
+        "reference_id",
+        "description",
+        "ownerId",
+        "createdAt"
+      ]
+    },
+    "Payment": {
+      "title": "Payment",
+      "description": "PayPal Sandbox Orders v2 authorization and capture record with webhook verification state.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "paypal_order_id": { "type": "string", "maxLength": 128 },
+        "authorization_id": { "type": "string", "maxLength": 128 },
+        "capture_id": { "type": "string", "maxLength": 128 },
+        "amount": { "type": "number" },
+        "currency": { "type": "string", "enum": ["USD"], "maxLength": 8 },
+        "status": {
+          "type": "string",
+          "enum": ["created", "approved", "authorized", "captured", "voided", "refunded"],
+          "maxLength": 32
+        },
+        "mode": { "type": "string", "enum": ["paypal_sandbox_live", "paypal_sandbox_protocol"], "maxLength": 64 },
+        "approval_url": { "type": "string", "maxLength": 1000 },
+        "webhook_verified": { "type": "boolean" },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "paypal_order_id",
+        "authorization_id",
+        "capture_id",
+        "amount",
+        "currency",
+        "status",
+        "mode",
+        "approval_url",
+        "webhook_verified",
+        "ownerId",
+        "createdAt",
+        "updatedAt"
+      ]
+    },
+    "AgentMessage": {
+      "title": "AgentMessage",
+      "description": "Structured AEP/1.0 protocol message exchanged between autonomous agents.",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "project_id": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "protocol": { "type": "string", "enum": ["AEP/1.0"], "maxLength": 16 },
+        "message_id": { "type": "string", "maxLength": 64 },
+        "message_type": {
+          "type": "string",
+          "enum": [
+            "TASK_PUBLISH",
+            "TASK_DISCOVER",
+            "BID_SUBMIT",
+            "BID_REJECT",
+            "BID_COUNTER",
+            "CONTRACT_AWARD",
+            "SUBTASK_CREATE",
+            "TASK_START",
+            "DELIVERABLE_SUBMIT",
+            "VERIFICATION_RESULT",
+            "PAYMENT_APPROVAL",
+            "LEDGER_CREDIT"
+          ],
+          "maxLength": 64
+        },
+        "sender_agent_code": { "type": "string", "maxLength": 32 },
+        "recipient_agent_code": { "type": "string", "maxLength": 32 },
+        "task_id": { "type": "string", "maxLength": 128 },
+        "summary": { "type": "string", "maxLength": 1000 },
+        "payload_json": { "type": "string", "maxLength": 5000 },
+        "ownerId": { "type": "string", "maxLength": 128, "pattern": "^[a-zA-Z0-9_\\-]+$" },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "id",
+        "project_id",
+        "protocol",
+        "message_id",
+        "message_type",
+        "sender_agent_code",
+        "recipient_agent_code",
+        "task_id",
+        "summary",
+        "payload_json",
+        "ownerId",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/agents/{agentId}": {
+      "schema": { "$ref": "#/entities/Agent" },
+      "description": "Registered autonomous agents in the marketplace."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Customer-funded economic projects."
+    },
+    "/tasks/{taskId}": {
+      "schema": { "$ref": "#/entities/Task" },
+      "description": "Tasks and subcontracted child tasks."
+    },
+    "/bids/{bidId}": {
+      "schema": { "$ref": "#/entities/Bid" },
+      "description": "Agent bids and negotiation counteroffers."
+    },
+    "/contracts/{contractId}": {
+      "schema": { "$ref": "#/entities/Contract" },
+      "description": "Awarded commercial contracts."
+    },
+    "/deliverables/{deliverableId}": {
+      "schema": { "$ref": "#/entities/Deliverable" },
+      "description": "Submitted agent deliverables and Veritas verification results."
+    },
+    "/ledger_entries/{entryId}": {
+      "schema": { "$ref": "#/entities/LedgerEntry" },
+      "description": "Immutable double-entry ledger records."
+    },
+    "/payments/{paymentId}": {
+      "schema": { "$ref": "#/entities/Payment" },
+      "description": "PayPal Sandbox Orders v2 authorizations, captures, and webhook events."
+    },
+    "/agent_messages/{messageId}": {
+      "schema": { "$ref": "#/entities/AgentMessage" },
+      "description": "AEP/1.0 protocol messages emitted during execution."
+    }
+  }
+}

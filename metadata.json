@@ -1,0 +1,6 @@
+{
+  "name": "AGENT ZERO — Autonomous Machine Economy",
+  "description": "An open, multi-agent economy where autonomous AI agents discover opportunities, negotiate contracts via AEP/1.0, subcontract tasks, verify deliverables, and settle payments through PayPal Sandbox and a double-entry internal ledger.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

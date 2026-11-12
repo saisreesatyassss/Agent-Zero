@@ -1,0 +1,582 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Safety Net (Default-Deny Catch-All)
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // 2. Hardened Global Helpers
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isVerifiedUser() {
+      return isSignedIn() && request.auth.token.email_verified == true;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isOwner(ownerId) {
+      return isVerifiedUser() && request.auth.uid == ownerId;
+    }
+
+    function ownsParentProject(projectId) {
+      return isValidId(projectId) &&
+        exists(/databases/$(database)/documents/projects/$(projectId)) &&
+        get(/databases/$(database)/documents/projects/$(projectId)).data.ownerId == request.auth.uid;
+    }
+
+    // 3. Entity Validation Blueprints
+    function isValidAgent(data) {
+      return data.keys().hasAll([
+          'id', 'agent_code', 'name', 'role', 'description', 'system_prompt', 'model',
+          'min_price', 'max_price', 'max_concurrent_tasks', 'can_subcontract',
+          'subcontract_limit_pct', 'reputation', 'completed_tasks', 'acceptance_rate',
+          'avg_verification_score', 'avg_delivery_seconds', 'subcontracted_count',
+          'disputes_count', 'skills', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'agent_code', 'name', 'role', 'description', 'system_prompt', 'model',
+          'min_price', 'max_price', 'max_concurrent_tasks', 'can_subcontract',
+          'subcontract_limit_pct', 'reputation', 'completed_tasks', 'acceptance_rate',
+          'avg_verification_score', 'avg_delivery_seconds', 'subcontracted_count',
+          'disputes_count', 'skills', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.agent_code is string && data.agent_code.size() >= 3 && data.agent_code.size() <= 32 && data.agent_code.matches('^[A-Z0-9\\-]+$') &&
+        data.name is string && data.name.size() >= 1 && data.name.size() <= 100 &&
+        data.role is string && data.role.size() >= 1 && data.role.size() <= 120 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 1000 &&
+        data.system_prompt is string && data.system_prompt.size() >= 1 && data.system_prompt.size() <= 2000 &&
+        data.model is string && data.model.size() >= 1 && data.model.size() <= 64 &&
+        data.min_price is number && data.min_price >= 0 && data.min_price <= 1000 &&
+        data.max_price is number && data.max_price >= data.min_price && data.max_price <= 5000 &&
+        data.max_concurrent_tasks is number && data.max_concurrent_tasks >= 1 && data.max_concurrent_tasks <= 10 &&
+        data.can_subcontract is bool &&
+        data.subcontract_limit_pct is number && data.subcontract_limit_pct >= 0 && data.subcontract_limit_pct <= 100 &&
+        data.reputation is number && data.reputation >= 0 && data.reputation <= 100 &&
+        data.completed_tasks is number && data.completed_tasks >= 0 &&
+        data.acceptance_rate is number && data.acceptance_rate >= 0 && data.acceptance_rate <= 100 &&
+        data.avg_verification_score is number && data.avg_verification_score >= 0 && data.avg_verification_score <= 100 &&
+        data.avg_delivery_seconds is number && data.avg_delivery_seconds >= 0 &&
+        data.subcontracted_count is number && data.subcontracted_count >= 0 &&
+        data.disputes_count is number && data.disputes_count >= 0 &&
+        data.skills is list && data.skills.size() >= 1 && data.skills.size() <= 20 && data.skills[0] is string && data.skills[0].size() <= 80 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['active', 'busy', 'offline'] &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll([
+          'id', 'title', 'description', 'customer_id', 'ownerId', 'budget',
+          'allocated_budget', 'currency', 'status', 'execution_mode',
+          'paypal_order_id', 'paypal_authorization_id', 'paypal_capture_id',
+          'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'title', 'description', 'customer_id', 'ownerId', 'budget',
+          'allocated_budget', 'currency', 'status', 'execution_mode',
+          'paypal_order_id', 'paypal_authorization_id', 'paypal_capture_id',
+          'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 3000 &&
+        data.customer_id is string && data.customer_id.size() >= 1 && data.customer_id.size() <= 128 &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.budget is number && data.budget > 0 && data.budget <= 10000 &&
+        data.allocated_budget is number && data.allocated_budget >= 0 && data.allocated_budget <= data.budget &&
+        data.currency is string && data.currency.size() <= 8 && data.currency in ['USD'] &&
+        data.status is string && data.status.size() <= 32 && data.status in [
+          'created', 'payment_authorized', 'decomposing', 'bidding', 'contracted',
+          'executing', 'verifying', 'delivered', 'settled', 'cancelled', 'disputed'
+        ] &&
+        data.execution_mode is string && data.execution_mode.size() <= 32 && data.execution_mode in ['autonomous', 'step_by_step'] &&
+        data.paypal_order_id is string && data.paypal_order_id.size() <= 128 &&
+        data.paypal_authorization_id is string && data.paypal_authorization_id.size() <= 128 &&
+        data.paypal_capture_id is string && data.paypal_capture_id.size() <= 128 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidTask(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'parent_task_id', 'delegation_depth', 'title',
+          'description', 'required_skills', 'allocated_budget', 'agreed_price',
+          'status', 'buyer_agent_id', 'buyer_agent_code', 'assigned_agent_id',
+          'assigned_agent_code', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'parent_task_id', 'delegation_depth', 'title',
+          'description', 'required_skills', 'allocated_budget', 'agreed_price',
+          'status', 'buyer_agent_id', 'buyer_agent_code', 'assigned_agent_id',
+          'assigned_agent_code', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        data.parent_task_id is string && data.parent_task_id.size() <= 128 &&
+        data.delegation_depth is number && data.delegation_depth >= 0 && data.delegation_depth <= 2 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 2000 &&
+        data.required_skills is list && data.required_skills.size() >= 1 && data.required_skills.size() <= 15 && data.required_skills[0] is string && data.required_skills[0].size() <= 80 &&
+        data.allocated_budget is number && data.allocated_budget >= 0 && data.allocated_budget <= 10000 &&
+        data.agreed_price is number && data.agreed_price >= 0 && data.agreed_price <= 10000 &&
+        data.status is string && data.status.size() <= 32 && data.status in [
+          'open', 'discoverable', 'bidding', 'contracted', 'executing',
+          'submitted', 'verified', 'settled', 'rejected', 'failed', 'cancelled', 'disputed'
+        ] &&
+        data.buyer_agent_id is string && data.buyer_agent_id.size() <= 128 &&
+        data.buyer_agent_code is string && data.buyer_agent_code.size() <= 32 &&
+        data.assigned_agent_id is string && data.assigned_agent_id.size() <= 128 &&
+        data.assigned_agent_code is string && data.assigned_agent_code.size() <= 32 &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidBid(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'task_id', 'agent_id', 'agent_code', 'agent_name',
+          'buyer_agent_code', 'initial_offer', 'proposed_price', 'final_price',
+          'estimated_minutes', 'proposal', 'negotiation_log', 'status', 'round',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'task_id', 'agent_id', 'agent_code', 'agent_name',
+          'buyer_agent_code', 'initial_offer', 'proposed_price', 'final_price',
+          'estimated_minutes', 'proposal', 'negotiation_log', 'status', 'round',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        isValidId(data.task_id) &&
+        isValidId(data.agent_id) &&
+        data.agent_code is string && data.agent_code.size() >= 1 && data.agent_code.size() <= 32 &&
+        data.agent_name is string && data.agent_name.size() >= 1 && data.agent_name.size() <= 100 &&
+        data.buyer_agent_code is string && data.buyer_agent_code.size() >= 1 && data.buyer_agent_code.size() <= 32 &&
+        data.initial_offer is number && data.initial_offer > 0 && data.initial_offer <= 10000 &&
+        data.proposed_price is number && data.proposed_price > 0 && data.proposed_price <= 10000 &&
+        data.final_price is number && data.final_price > 0 && data.final_price <= 10000 &&
+        data.estimated_minutes is number && data.estimated_minutes >= 1 && data.estimated_minutes <= 120 &&
+        data.proposal is string && data.proposal.size() >= 1 && data.proposal.size() <= 1000 &&
+        data.negotiation_log is string && data.negotiation_log.size() <= 2000 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['submitted', 'countered', 'accepted', 'rejected'] &&
+        data.round is number && data.round >= 1 && data.round <= 2 &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidContract(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'task_id', 'parent_task_id', 'buyer_agent_id',
+          'buyer_agent_code', 'seller_agent_id', 'seller_agent_code', 'seller_agent_name',
+          'bid_id', 'agreed_amount', 'subcontracted_amount', 'net_amount',
+          'currency', 'terms_summary', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'task_id', 'parent_task_id', 'buyer_agent_id',
+          'buyer_agent_code', 'seller_agent_id', 'seller_agent_code', 'seller_agent_name',
+          'bid_id', 'agreed_amount', 'subcontracted_amount', 'net_amount',
+          'currency', 'terms_summary', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        isValidId(data.task_id) &&
+        data.parent_task_id is string && data.parent_task_id.size() <= 128 &&
+        data.buyer_agent_id is string && data.buyer_agent_id.size() >= 1 && data.buyer_agent_id.size() <= 128 &&
+        data.buyer_agent_code is string && data.buyer_agent_code.size() >= 1 && data.buyer_agent_code.size() <= 32 &&
+        data.seller_agent_id is string && data.seller_agent_id.size() >= 1 && data.seller_agent_id.size() <= 128 &&
+        data.seller_agent_code is string && data.seller_agent_code.size() >= 1 && data.seller_agent_code.size() <= 32 &&
+        data.seller_agent_name is string && data.seller_agent_name.size() >= 1 && data.seller_agent_name.size() <= 100 &&
+        data.bid_id is string && data.bid_id.size() <= 128 &&
+        data.agreed_amount is number && data.agreed_amount > 0 && data.agreed_amount <= 10000 &&
+        data.subcontracted_amount is number && data.subcontracted_amount >= 0 && data.subcontracted_amount <= data.agreed_amount &&
+        data.net_amount is number && data.net_amount >= 0 && data.net_amount <= data.agreed_amount &&
+        data.currency is string && data.currency.size() <= 8 && data.currency in ['USD'] &&
+        data.terms_summary is string && data.terms_summary.size() >= 1 && data.terms_summary.size() <= 1000 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['active', 'completed', 'settled', 'disputed', 'cancelled'] &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidDeliverable(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'task_id', 'agent_id', 'agent_code', 'agent_name',
+          'title', 'summary', 'content_markdown', 'evidence_items', 'version',
+          'verification_score', 'verification_passed', 'verification_feedback',
+          'verifier_agent_code', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'task_id', 'agent_id', 'agent_code', 'agent_name',
+          'title', 'summary', 'content_markdown', 'evidence_items', 'version',
+          'verification_score', 'verification_passed', 'verification_feedback',
+          'verifier_agent_code', 'status', 'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        isValidId(data.task_id) &&
+        isValidId(data.agent_id) &&
+        data.agent_code is string && data.agent_code.size() >= 1 && data.agent_code.size() <= 32 &&
+        data.agent_name is string && data.agent_name.size() >= 1 && data.agent_name.size() <= 100 &&
+        data.title is string && data.title.size() >= 1 && data.title.size() <= 200 &&
+        data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 2000 &&
+        data.content_markdown is string && data.content_markdown.size() >= 1 && data.content_markdown.size() <= 15000 &&
+        data.evidence_items is list && data.evidence_items.size() >= 1 && data.evidence_items.size() <= 25 && data.evidence_items[0] is string && data.evidence_items[0].size() <= 500 &&
+        data.version is number && data.version >= 1 && data.version <= 10 &&
+        data.verification_score is number && data.verification_score >= 0 && data.verification_score <= 100 &&
+        data.verification_passed is bool &&
+        data.verification_feedback is string && data.verification_feedback.size() <= 2000 &&
+        data.verifier_agent_code is string && data.verifier_agent_code.size() <= 32 &&
+        data.status is string && data.status.size() <= 32 && data.status in ['submitted', 'verified', 'accepted', 'rejected'] &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidLedgerEntry(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'transaction_group_id', 'account_id', 'owner_type',
+          'owner_code', 'owner_name', 'account_type', 'direction', 'amount',
+          'currency', 'reference_type', 'reference_id', 'description',
+          'ownerId', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'transaction_group_id', 'account_id', 'owner_type',
+          'owner_code', 'owner_name', 'account_type', 'direction', 'amount',
+          'currency', 'reference_type', 'reference_id', 'description',
+          'ownerId', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        isValidId(data.transaction_group_id) &&
+        data.account_id is string && data.account_id.size() >= 1 && data.account_id.size() <= 128 &&
+        data.owner_type is string && data.owner_type.size() <= 32 && data.owner_type in ['customer', 'escrow', 'agent'] &&
+        data.owner_code is string && data.owner_code.size() >= 1 && data.owner_code.size() <= 64 &&
+        data.owner_name is string && data.owner_name.size() >= 1 && data.owner_name.size() <= 120 &&
+        data.account_type is string && data.account_type.size() <= 64 && data.account_type in ['funding', 'escrow_liability', 'gross_revenue', 'subcontract_expense', 'net_earnings'] &&
+        data.direction is string && data.direction.size() <= 16 && data.direction in ['debit', 'credit'] &&
+        data.amount is number && data.amount > 0 && data.amount <= 10000 &&
+        data.currency is string && data.currency.size() <= 8 && data.currency in ['USD'] &&
+        data.reference_type is string && data.reference_type.size() >= 1 && data.reference_type.size() <= 64 &&
+        data.reference_id is string && data.reference_id.size() >= 1 && data.reference_id.size() <= 128 &&
+        data.description is string && data.description.size() >= 1 && data.description.size() <= 500 &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp;
+    }
+
+    function isValidPayment(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'paypal_order_id', 'authorization_id', 'capture_id',
+          'amount', 'currency', 'status', 'mode', 'approval_url', 'webhook_verified',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'paypal_order_id', 'authorization_id', 'capture_id',
+          'amount', 'currency', 'status', 'mode', 'approval_url', 'webhook_verified',
+          'ownerId', 'createdAt', 'updatedAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        data.paypal_order_id is string && data.paypal_order_id.size() >= 1 && data.paypal_order_id.size() <= 128 &&
+        data.authorization_id is string && data.authorization_id.size() <= 128 &&
+        data.capture_id is string && data.capture_id.size() <= 128 &&
+        data.amount is number && data.amount > 0 && data.amount <= 10000 &&
+        data.currency is string && data.currency.size() <= 8 && data.currency in ['USD'] &&
+        data.status is string && data.status.size() <= 32 && data.status in ['created', 'approved', 'authorized', 'captured', 'voided', 'refunded'] &&
+        data.mode is string && data.mode.size() <= 64 && data.mode in ['paypal_sandbox_live', 'paypal_sandbox_protocol'] &&
+        data.approval_url is string && data.approval_url.size() <= 1000 &&
+        data.webhook_verified is bool &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp;
+    }
+
+    function isValidAgentMessage(data) {
+      return data.keys().hasAll([
+          'id', 'project_id', 'protocol', 'message_id', 'message_type',
+          'sender_agent_code', 'recipient_agent_code', 'task_id',
+          'summary', 'payload_json', 'ownerId', 'createdAt'
+        ]) &&
+        data.keys().hasOnly([
+          'id', 'project_id', 'protocol', 'message_id', 'message_type',
+          'sender_agent_code', 'recipient_agent_code', 'task_id',
+          'summary', 'payload_json', 'ownerId', 'createdAt'
+        ]) &&
+        isValidId(data.id) &&
+        isValidId(data.project_id) &&
+        data.protocol is string && data.protocol.size() <= 16 && data.protocol in ['AEP/1.0'] &&
+        data.message_id is string && data.message_id.size() >= 1 && data.message_id.size() <= 64 &&
+        data.message_type is string && data.message_type.size() <= 64 && data.message_type in [
+          'TASK_PUBLISH', 'TASK_DISCOVER', 'BID_SUBMIT', 'BID_REJECT', 'BID_COUNTER',
+          'CONTRACT_AWARD', 'SUBTASK_CREATE', 'TASK_START', 'DELIVERABLE_SUBMIT',
+          'VERIFICATION_RESULT', 'PAYMENT_APPROVAL', 'LEDGER_CREDIT'
+        ] &&
+        data.sender_agent_code is string && data.sender_agent_code.size() >= 1 && data.sender_agent_code.size() <= 32 &&
+        data.recipient_agent_code is string && data.recipient_agent_code.size() >= 1 && data.recipient_agent_code.size() <= 32 &&
+        data.task_id is string && data.task_id.size() <= 128 &&
+        data.summary is string && data.summary.size() >= 1 && data.summary.size() <= 1000 &&
+        data.payload_json is string && data.payload_json.size() >= 2 && data.payload_json.size() <= 5000 &&
+        isValidId(data.ownerId) && data.ownerId == request.auth.uid &&
+        data.createdAt is timestamp;
+    }
+
+    // 4. Collection Match Blocks
+    match /agents/{agentId} {
+      allow get: if isValidId(agentId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(agentId) &&
+        incoming().id == agentId &&
+        isValidAgent(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(agentId) &&
+        isValidAgent(incoming()) &&
+        isOwner(existing().ownerId) &&
+        incoming().id == existing().id &&
+        incoming().agent_code == existing().agent_code &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'reputation', 'completed_tasks', 'acceptance_rate',
+            'avg_verification_score', 'avg_delivery_seconds',
+            'subcontracted_count', 'disputes_count', 'status', 'updatedAt'
+          ])
+        );
+      allow delete: if false;
+    }
+
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(projectId) &&
+        incoming().id == projectId &&
+        isValidProject(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time;
+      allow update: if isVerifiedUser() &&
+        isValidId(projectId) &&
+        isValidProject(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['settled', 'cancelled']) &&
+        incoming().id == existing().id &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().customer_id == existing().customer_id &&
+        incoming().budget == existing().budget &&
+        incoming().currency == existing().currency &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'status', 'allocated_budget', 'paypal_order_id',
+            'paypal_authorization_id', 'paypal_capture_id', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt']) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'allocated_budget', 'updatedAt'])
+        );
+      allow delete: if false;
+    }
+
+    match /tasks/{taskId} {
+      allow get: if isValidId(taskId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(taskId) &&
+        incoming().id == taskId &&
+        isValidTask(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update: if isVerifiedUser() &&
+        isValidId(taskId) &&
+        isValidTask(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['settled', 'cancelled']) &&
+        incoming().id == existing().id &&
+        incoming().project_id == existing().project_id &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(existing().project_id) &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'status', 'agreed_price', 'assigned_agent_id', 'assigned_agent_code', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        );
+      allow delete: if false;
+    }
+
+    match /bids/{bidId} {
+      allow get: if isValidId(bidId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(bidId) &&
+        incoming().id == bidId &&
+        isValidBid(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update: if isVerifiedUser() &&
+        isValidId(bidId) &&
+        isValidBid(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['accepted', 'rejected']) &&
+        incoming().id == existing().id &&
+        incoming().project_id == existing().project_id &&
+        incoming().task_id == existing().task_id &&
+        incoming().agent_id == existing().agent_id &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(existing().project_id) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'status', 'final_price', 'round', 'negotiation_log', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    match /contracts/{contractId} {
+      allow get: if isValidId(contractId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(contractId) &&
+        incoming().id == contractId &&
+        isValidContract(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update: if isVerifiedUser() &&
+        isValidId(contractId) &&
+        isValidContract(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['settled', 'cancelled']) &&
+        incoming().id == existing().id &&
+        incoming().project_id == existing().project_id &&
+        incoming().task_id == existing().task_id &&
+        incoming().agreed_amount == existing().agreed_amount &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(existing().project_id) &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'status', 'subcontracted_amount', 'net_amount', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        );
+      allow delete: if false;
+    }
+
+    match /deliverables/{deliverableId} {
+      allow get: if isValidId(deliverableId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(deliverableId) &&
+        incoming().id == deliverableId &&
+        isValidDeliverable(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update: if isVerifiedUser() &&
+        isValidId(deliverableId) &&
+        isValidDeliverable(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['accepted', 'rejected']) &&
+        incoming().id == existing().id &&
+        incoming().project_id == existing().project_id &&
+        incoming().task_id == existing().task_id &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(existing().project_id) &&
+        (
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'verification_score', 'verification_passed', 'verification_feedback',
+            'verifier_agent_code', 'status', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly([
+            'summary', 'content_markdown', 'evidence_items', 'version',
+            'verification_score', 'verification_passed', 'verification_feedback',
+            'verifier_agent_code', 'status', 'updatedAt'
+          ]) ||
+          incoming().diff(existing()).affectedKeys().hasOnly(['status', 'updatedAt'])
+        );
+      allow delete: if false;
+    }
+
+    match /ledger_entries/{entryId} {
+      allow get: if isValidId(entryId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(entryId) &&
+        incoming().id == entryId &&
+        isValidLedgerEntry(incoming()) &&
+        incoming().createdAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update, delete: if false;
+    }
+
+    match /payments/{paymentId} {
+      allow get: if isValidId(paymentId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(paymentId) &&
+        incoming().id == paymentId &&
+        isValidPayment(incoming()) &&
+        incoming().createdAt == request.time &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update: if isVerifiedUser() &&
+        isValidId(paymentId) &&
+        isValidPayment(incoming()) &&
+        isOwner(existing().ownerId) &&
+        !(existing().status in ['captured', 'voided', 'refunded']) &&
+        incoming().id == existing().id &&
+        incoming().project_id == existing().project_id &&
+        incoming().paypal_order_id == existing().paypal_order_id &&
+        incoming().amount == existing().amount &&
+        incoming().ownerId == existing().ownerId &&
+        incoming().createdAt == existing().createdAt &&
+        incoming().updatedAt == request.time &&
+        ownsParentProject(existing().project_id) &&
+        incoming().diff(existing()).affectedKeys().hasOnly([
+          'authorization_id', 'capture_id', 'status', 'webhook_verified', 'updatedAt'
+        ]);
+      allow delete: if false;
+    }
+
+    match /agent_messages/{messageId} {
+      allow get: if isValidId(messageId) && isOwner(existing().ownerId);
+      allow list: if isOwner(existing().ownerId);
+      allow create: if isVerifiedUser() &&
+        isValidId(messageId) &&
+        incoming().id == messageId &&
+        isValidAgentMessage(incoming()) &&
+        incoming().createdAt == request.time &&
+        ownsParentProject(incoming().project_id);
+      allow update, delete: if false;
+    }
+  }
+}
